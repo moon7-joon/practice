@@ -541,3 +541,34 @@ To https://github.com/moon7-joon/practice.git
 Git은 로컬 파일의 변경 이력을 관리하고,
 GitHub는 원격 저장소를 제공하여 공유와 협업을 지원한다.
 VS Code의 GitHub 로그인 및 연동 증거는 별도로 확인할 예정이다.
+
+## 보너스: GitHub SSH 키 설정
+
+Ed25519 키를 생성하고 ssh-agent에 등록한 뒤,
+GitHub 계정의 SSH 인증 키로 공개키를 추가했다.
+비밀키와 암호는 저장소에 포함하지 않았다.
+
+### SSH 인증 테스트
+```bash
+ssh -T git@github.com
+```
+
+실제 출력:
+```text
+Hi moon7-joon! You've successfully authenticated, but GitHub does not provide shell access.
+```
+
+### 원격 저장소를 SSH 방식으로 변경
+```bash
+git remote set-url origin git@github.com:moon7-joon/practice.git
+git remote -v
+```
+
+실제 출력:
+```text
+origin  git@github.com:moon7-joon/practice.git (fetch)
+origin  git@github.com:moon7-joon/practice.git (push)
+```
+
+SSH 인증과 원격 주소 변경을 확인했다.
+실제 SSH push 결과는 다음 단계에서 검증한다.
