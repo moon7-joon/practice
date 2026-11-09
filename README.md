@@ -572,3 +572,20 @@ origin  git@github.com:moon7-joon/practice.git (push)
 
 SSH 인증과 원격 주소 변경을 확인했다.
 git push origin main 실행 결과, To github.com:moon7-joon/practice.git 및 639fdbc..fde7521 main -> main이 출력되어 SSH 업로드 성공을 확인했다.
+
+### SSH 업로드 검증 완료
+
+실행 명령:
+```bash
+git push origin main
+```
+
+실제 출력 발췌:
+```text
+To github.com:moon7-joon/practice.git
+639fdbc..fde7521  main -> main
+```
+
+- [x] 보너스: SSH 키 생성 및 GitHub 공개키 등록
+- [x] 보너스: SSH 인증 성공
+- [x] 보너스: HTTPS 대신 SSH로 업로드 성공
