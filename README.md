@@ -5,12 +5,12 @@
 수행한 명령과 실제 결과를 기록하고, 오류의 원인과 해결 과정을 정리한다.
 
 ## 2. 실행 환경
-- 호스트 OS: Windows (세부 버전 확인 예정)
-- 리눅스 환경: WSL 2 Ubuntu (배포판 버전 확인 예정)
+- 호스트 OS: Windows 11 Home (버전 10.0.26200, 빌드 26200)
+- 리눅스 환경: WSL 2 Ubuntu 26.04.1 LTS
 - 터미널: VS Code 통합 터미널
 - 실습 경로: /home/kimmoonhee/codyssey/practice
 - Docker Client/Server: 29.9.2
-- Git 버전: 확인 예정
+- Git 버전: 2.53.0
 
 ## 3. 수행 체크리스트
 - [x] 터미널 기본 조작
@@ -449,3 +449,95 @@ My data survives container deletion
 첫 컨테이너를 삭제한 뒤 새 컨테이너에 같은 볼륨을 연결해
 기존 파일을 읽었다. 데이터가 컨테이너와 별도로 유지됨을 확인했다.
 볼륨 자체를 삭제하면 이 데이터도 삭제될 수 있다.
+
+## 15. 트러블슈팅 보완 — 사례 2: Docker 소켓 권한 오류
+
+### 문제
+Ubuntu에서 다음 명령을 실행했으나 접근 권한 오류가 발생했다.
+```bash
+docker info
+```
+실제 오류:
+```text
+permission denied while trying to connect to the docker API at unix:///var/run/docker.sock
+```
+
+### 원인 가설 및 확인
+사용자가 Docker 소켓에 접근할 그룹 권한이 없는지 확인했다.
+```bash
+id
+ls -l /var/run/docker.sock
+```
+당시 id 출력에는 docker 그룹이 없었다.
+소켓 권한은 다음과 같았다.
+```text
+srw-rw---- 1 root docker 0 Nov 9 02:18 /var/run/docker.sock
+```
+소켓은 root와 docker 그룹에 읽기·쓰기 권한이 있었다.
+
+### 해결 및 대안
+사용자를 docker 그룹에 추가했다.
+```bash
+sudo usermod -aG docker kimmoonhee
+newgrp docker
+```
+newgrp는 설치되지 않아 실행되지 않았다.
+```text
+Command 'newgrp' not found
+```
+대신 exit로 Ubuntu에서 나온 후 PowerShell에서 다시 접속했다.
+```powershell
+wsl -d Ubuntu
+```
+
+### 재검증 결과
+Ubuntu에서 다음을 실행했다.
+```bash
+id
+docker info
+```
+id 출력에 1001(docker)가 추가됐고,
+docker info에서 Server Version: 29.9.2를 포함한 서버 정보가 정상 출력됐다.
+docker 그룹은 높은 시스템 권한을 가지므로 신뢰하는 계정에만 부여한다.
+
+## 16. Git 설정 및 GitHub 업로드
+
+### 설정 확인
+```bash
+git config --list
+```
+
+실제 출력 발췌:
+```text
+init.defaultbranch=main
+credential.https://github.com.helper=!/usr/bin/gh auth git-credential
+user.name=김문희
+user.email=349675301+moon7-joon@users.noreply.github.com
+remote.origin.url=https://github.com/moon7-joon/practice.git
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+```
+
+### 인증 및 업로드
+GitHub CLI의 브라우저 인증을 완료했다.
+일회용 코드와 인증 토큰은 문서에 기록하지 않았다.
+
+실행 명령:
+```bash
+git add Dockerfile site/index.html evidence/web-8080.jpg memo.txt
+git commit -m "Docker 웹 서버 실습 파일과 접속 증거 추가"
+git push origin main
+```
+
+실제 출력 발췌:
+```text
+[main 83899b2] Docker 웹 서버 실습 파일과 접속 증거 추가
+4 files changed, 17 insertions(+)
+To https://github.com/moon7-joon/practice.git
+7125d65..83899b2  main -> main
+```
+
+저장소: https://github.com/moon7-joon/practice
+
+Git은 로컬 파일의 변경 이력을 관리하고,
+GitHub는 원격 저장소를 제공하여 공유와 협업을 지원한다.
+VS Code의 GitHub 로그인 및 연동 증거는 별도로 확인할 예정이다.
